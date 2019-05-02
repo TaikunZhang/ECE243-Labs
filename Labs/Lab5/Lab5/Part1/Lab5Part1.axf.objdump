@@ -1,0 +1,121 @@
+
+C:/intelFPGA_lite/18.0/Ece243/Lab5/Part1/Lab5Part1.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+		  .text                   // executable code follows
+          .global _start          
+		  
+_start: ldr r5,=0xff200020   //hex address
+   0:	e59f50ac 	ldr	r5, [pc, #172]	; b4 <Blank+0x4>
+		mov r6,#Blank
+   4:	e3a060b0 	mov	r6, #176	; 0xb0
+		ldrb r6,[r6]
+   8:	e5d66000 	ldrb	r6, [r6]
+		mov r2,#0   //count on hex
+   c:	e3a02000 	mov	r2, #0
+		mov r8,#0x3f
+  10:	e3a0803f 	mov	r8, #63	; 0x3f
+		mov r7,#0
+  14:	e3a07000 	mov	r7, #0
+		str r8,[r5]
+  18:	e5858000 	str	r8, [r5]
+
+0000001c <display>:
+		
+display: ldr r4,[r5,#0x30] //key in r4	
+  1c:	e5954030 	ldr	r4, [r5, #48]	; 0x30
+	     cmp r4,#1
+  20:	e3540001 	cmp	r4, #1
+		 addeq r7,#1
+  24:	02877001 	addeq	r7, r7, #1
+		 beq setzero
+  28:	0a000006 	beq	48 <setzero>
+		 cmp r4,#2
+  2c:	e3540002 	cmp	r4, #2
+		 beq increment
+  30:	0a000009 	beq	5c <increment>
+		 cmp r4,#4
+  34:	e3540004 	cmp	r4, #4
+		 beq decrement
+  38:	0a00000d 	beq	74 <decrement>
+		 cmp r4,#8
+  3c:	e3540008 	cmp	r4, #8
+		 beq blank
+  40:	0a000011 	beq	8c <blank>
+		 b display
+  44:	eafffff4 	b	1c <display>
+
+00000048 <setzero>:
+		 
+setzero: mov r2,#0
+  48:	e3a02000 	mov	r2, #0
+		 mov r0,r2
+  4c:	e1a00002 	mov	r0, r2
+		 bl SEG7_CODE
+  50:	eb00000f 	bl	94 <SEG7_CODE>
+		 str r0,[r5]
+  54:	e5850000 	str	r0, [r5]
+		 b display
+  58:	eaffffef 	b	1c <display>
+
+0000005c <increment>:
+		 
+increment: cmp r2,#9
+  5c:	e3520009 	cmp	r2, #9
+		   addne r2,#1
+  60:	12822001 	addne	r2, r2, #1
+		   mov r0,r2
+  64:	e1a00002 	mov	r0, r2
+		   bl SEG7_CODE
+  68:	eb000009 	bl	94 <SEG7_CODE>
+		   str r0,[r5]
+  6c:	e5850000 	str	r0, [r5]
+		   b display
+  70:	eaffffe9 	b	1c <display>
+
+00000074 <decrement>:
+		   
+decrement: cmp r2,#0
+  74:	e3520000 	cmp	r2, #0
+		   subne r2,#1
+  78:	12422001 	subne	r2, r2, #1
+		   mov r0,r2
+  7c:	e1a00002 	mov	r0, r2
+		   bl SEG7_CODE
+  80:	eb000003 	bl	94 <SEG7_CODE>
+		   str r0,[r5]
+  84:	e5850000 	str	r0, [r5]
+		   b display
+  88:	eaffffe3 	b	1c <display>
+
+0000008c <blank>:
+		   
+blank:     strb r6,[r5]
+  8c:	e5c56000 	strb	r6, [r5]
+		   b display
+  90:	eaffffe1 	b	1c <display>
+
+00000094 <SEG7_CODE>:
+		    
+
+
+SEG7_CODE:  MOV     R1, #BIT_CODES  
+  94:	e3a010a4 	mov	r1, #164	; 0xa4
+            ADD     R1, R0         // index into the BIT_CODES "array"
+  98:	e0811000 	add	r1, r1, r0
+            LDRB    R0, [R1]       // load the bit pattern (to be returned)
+  9c:	e5d10000 	ldrb	r0, [r1]
+            MOV     PC, LR              
+  a0:	e1a0f00e 	mov	pc, lr
+
+000000a4 <BIT_CODES>:
+  a4:	4f5b063f 	.word	0x4f5b063f
+  a8:	077d6d66 	.word	0x077d6d66
+  ac:	0000677f 	.word	0x0000677f
+
+000000b0 <Blank>:
+  b0:	00000000 	.word	0x00000000
+  b4:	ff200020 	.word	0xff200020

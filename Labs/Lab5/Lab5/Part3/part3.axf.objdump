@@ -1,0 +1,142 @@
+
+C:/intelFPGA_lite/18.0/Ece243/Lab5/Part3/part3.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+	  .text                   // executable code follows
+          .global _start          
+		  
+_start: ldr r5,=0xff200020   //hex address
+   0:	e59f50c4 	ldr	r5, [pc, #196]	; cc <BIT_CODES+0xc>
+		ldr r6,=50000000   //load 50 mill
+   4:	e59f60c4 	ldr	r6, [pc, #196]	; d0 <BIT_CODES+0x10>
+		ldr r9,=0xfffec600
+   8:	e59f90c4 	ldr	r9, [pc, #196]	; d4 <BIT_CODES+0x14>
+		str r6,[r9]  //str 50 mill in load register 
+   c:	e5896000 	str	r6, [r9]
+		mov r6,#3
+  10:	e3a06003 	mov	r6, #3
+		str r6,[r9,#0x8] //load A bit and E bit
+  14:	e5896008 	str	r6, [r9, #8]
+		mov r7,#0     //count register
+  18:	e3a07000 	mov	r7, #0
+		mov r12,#0   //state register
+  1c:	e3a0c000 	mov	r12, #0
+		mov r10,#0xf  //overwrite
+  20:	e3a0a00f 	mov	r10, #15
+
+00000024 <display>:
+
+
+display: ldr r4,[r5,#0x3C] //key in r4	
+  24:	e595403c 	ldr	r4, [r5, #60]	; 0x3c
+		 ands r6,r4,#0b1111
+  28:	e214600f 	ands	r6, r4, #15
+		 blne set_bit
+  2c:	1b000015 	blne	88 <set_bit>
+		 cmp  r6,#0
+  30:	e3560000 	cmp	r6, #0
+		 eorgt r12,#1 //flip bit
+  34:	c22cc001 	eorgt	r12, r12, #1
+		 cmp r12,#1
+  38:	e35c0001 	cmp	r12, #1
+		 beq count
+  3c:	0a000000 	beq	44 <count>
+		 b   display
+  40:	eafffff7 	b	24 <display>
+
+00000044 <count>:
+		 
+count:  cmp r7,#99
+  44:	e3570063 	cmp	r7, #99	; 0x63
+		moveq r7,#0
+  48:	03a07000 	moveq	r7, #0
+		add r7,#1
+  4c:	e2877001 	add	r7, r7, #1
+		mov r0,r7
+  50:	e1a00007 	mov	r0, r7
+		bl DIVIDE
+  54:	eb00000d 	bl	90 <DIVIDE>
+		mov r8,r1
+  58:	e1a08001 	mov	r8, r1
+		bl SEG7_CODE
+  5c:	eb000013 	bl	b0 <SEG7_CODE>
+		strb r0,[r5]
+  60:	e5c50000 	strb	r0, [r5]
+		mov r0,r8
+  64:	e1a00008 	mov	r0, r8
+		bl SEG7_CODE
+  68:	eb000010 	bl	b0 <SEG7_CODE>
+		strb r0,[r5,#1]
+  6c:	e5c50001 	strb	r0, [r5, #1]
+
+00000070 <delay>:
+
+delay:  ldr r4,[r9,#0xc]
+  70:	e599400c 	ldr	r4, [r9, #12]
+		and r4,#1
+  74:	e2044001 	and	r4, r4, #1
+		cmp r4,#1
+  78:	e3540001 	cmp	r4, #1
+		bne delay
+  7c:	1afffffb 	bne	70 <delay>
+		str r4,[r9,#0xc]
+  80:	e589400c 	str	r4, [r9, #12]
+		b display
+  84:	eaffffe6 	b	24 <display>
+
+00000088 <set_bit>:
+		
+
+set_bit: str r10,[r5,#0x3C]
+  88:	e585a03c 	str	r10, [r5, #60]	; 0x3c
+		 mov pc,lr
+  8c:	e1a0f00e 	mov	pc, lr
+
+00000090 <DIVIDE>:
+
+
+DIVIDE:     			MOV    R2, #0
+  90:	e3a02000 	mov	r2, #0
+
+00000094 <CONT>:
+CONT:       			CMP    R0, #10
+  94:	e350000a 	cmp	r0, #10
+						BLT    DIV_END
+  98:	ba000002 	blt	a8 <DIV_END>
+						SUB    R0, #10
+  9c:	e240000a 	sub	r0, r0, #10
+						ADD    R2, #1
+  a0:	e2822001 	add	r2, r2, #1
+						B      CONT
+  a4:	eafffffa 	b	94 <CONT>
+
+000000a8 <DIV_END>:
+DIV_END:    			MOV    R1, R2     // quotient in R1 (remainder in R0)
+  a8:	e1a01002 	mov	r1, r2
+						MOV    PC, LR       
+  ac:	e1a0f00e 	mov	pc, lr
+
+000000b0 <SEG7_CODE>:
+
+
+
+
+SEG7_CODE:  MOV     R1, #BIT_CODES  
+  b0:	e3a010c0 	mov	r1, #192	; 0xc0
+            ADD     R1, R0         // index into the BIT_CODES "array"
+  b4:	e0811000 	add	r1, r1, r0
+            LDRB    R0, [R1]       // load the bit pattern (to be returned)
+  b8:	e5d10000 	ldrb	r0, [r1]
+            MOV     PC, LR              
+  bc:	e1a0f00e 	mov	pc, lr
+
+000000c0 <BIT_CODES>:
+  c0:	4f5b063f 	.word	0x4f5b063f
+  c4:	077d6d66 	.word	0x077d6d66
+  c8:	0000677f 	.word	0x0000677f
+  cc:	ff200020 	.word	0xff200020
+  d0:	02faf080 	.word	0x02faf080
+  d4:	fffec600 	.word	0xfffec600

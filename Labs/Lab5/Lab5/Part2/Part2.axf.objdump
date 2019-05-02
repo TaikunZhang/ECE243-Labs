@@ -1,0 +1,128 @@
+
+C:/intelFPGA_lite/18.0/Ece243/Lab5/Part2/Part2.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+	  .text                   // executable code follows
+          .global _start          
+		  
+_start: ldr r5,=0xff200020   //hex address
+   0:	e59f50a8 	ldr	r5, [pc, #168]	; b0 <BIT_CODES+0xc>
+		mov r7,#0     //count register
+   4:	e3a07000 	mov	r7, #0
+		mov r12,#0   //state register
+   8:	e3a0c000 	mov	r12, #0
+		mov r10,#0xf  //overwrite
+   c:	e3a0a00f 	mov	r10, #15
+
+00000010 <display>:
+		
+		
+display: ldr r4,[r5,#0x3C] //key in r4	
+  10:	e595403c 	ldr	r4, [r5, #60]	; 0x3c
+		 ands r6,r4,#0b1111
+  14:	e214600f 	ands	r6, r4, #15
+		 blne set_bit
+  18:	1b000013 	blne	6c <set_bit>
+		 cmp  r6,#0
+  1c:	e3560000 	cmp	r6, #0
+		 eorgt r12,#1 //flip bit
+  20:	c22cc001 	eorgt	r12, r12, #1
+		 cmp r12,#1
+  24:	e35c0001 	cmp	r12, #1
+		 beq count
+  28:	0a000000 	beq	30 <count>
+		 b   display
+  2c:	eafffff7 	b	10 <display>
+
+00000030 <count>:
+		 
+count:  cmp r7,#99
+  30:	e3570063 	cmp	r7, #99	; 0x63
+		moveq r7,#0
+  34:	03a07000 	moveq	r7, #0
+		add r7,#1
+  38:	e2877001 	add	r7, r7, #1
+		mov r0,r7
+  3c:	e1a00007 	mov	r0, r7
+		bl DIVIDE
+  40:	eb00000b 	bl	74 <DIVIDE>
+		mov r8,r1
+  44:	e1a08001 	mov	r8, r1
+		bl SEG7_CODE
+  48:	eb000011 	bl	94 <SEG7_CODE>
+		strb r0,[r5]
+  4c:	e5c50000 	strb	r0, [r5]
+		mov r0,r8
+  50:	e1a00008 	mov	r0, r8
+		bl SEG7_CODE
+  54:	eb00000e 	bl	94 <SEG7_CODE>
+		strb r0,[r5,#1]
+  58:	e5c50001 	strb	r0, [r5, #1]
+
+0000005c <DO_DELAY>:
+		
+DO_DELAY: LDR R11, =50000000 // delay counter
+  5c:	e59fb050 	ldr	r11, [pc, #80]	; b4 <BIT_CODES+0x10>
+
+00000060 <SUB_LOOP>:
+SUB_LOOP: SUBS R11, R11, #1
+  60:	e25bb001 	subs	r11, r11, #1
+		  BNE SUB_LOOP
+  64:	1afffffd 	bne	60 <SUB_LOOP>
+		  b display
+  68:	eaffffe8 	b	10 <display>
+
+0000006c <set_bit>:
+
+set_bit: str r10,[r5,#0x3C]
+  6c:	e585a03c 	str	r10, [r5, #60]	; 0x3c
+		 mov pc,lr
+  70:	e1a0f00e 	mov	pc, lr
+
+00000074 <DIVIDE>:
+
+
+DIVIDE:     			MOV    R2, #0
+  74:	e3a02000 	mov	r2, #0
+
+00000078 <CONT>:
+CONT:       			CMP    R0, #10
+  78:	e350000a 	cmp	r0, #10
+						BLT    DIV_END
+  7c:	ba000002 	blt	8c <DIV_END>
+						SUB    R0, #10
+  80:	e240000a 	sub	r0, r0, #10
+						ADD    R2, #1
+  84:	e2822001 	add	r2, r2, #1
+						B      CONT
+  88:	eafffffa 	b	78 <CONT>
+
+0000008c <DIV_END>:
+DIV_END:    			MOV    R1, R2     // quotient in R1 (remainder in R0)
+  8c:	e1a01002 	mov	r1, r2
+						MOV    PC, LR       
+  90:	e1a0f00e 	mov	pc, lr
+
+00000094 <SEG7_CODE>:
+
+
+
+
+SEG7_CODE:  MOV     R1, #BIT_CODES  
+  94:	e3a010a4 	mov	r1, #164	; 0xa4
+            ADD     R1, R0         // index into the BIT_CODES "array"
+  98:	e0811000 	add	r1, r1, r0
+            LDRB    R0, [R1]       // load the bit pattern (to be returned)
+  9c:	e5d10000 	ldrb	r0, [r1]
+            MOV     PC, LR              
+  a0:	e1a0f00e 	mov	pc, lr
+
+000000a4 <BIT_CODES>:
+  a4:	4f5b063f 	.word	0x4f5b063f
+  a8:	077d6d66 	.word	0x077d6d66
+  ac:	0000677f 	.word	0x0000677f
+  b0:	ff200020 	.word	0xff200020
+  b4:	02faf080 	.word	0x02faf080
