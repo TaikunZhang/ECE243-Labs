@@ -1,0 +1,78 @@
+
+C:/intelFPGA_lite/18.0/Ece243/Lab4/Part2/Part2.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+/* Program that counts multiple words for consecutive 1's */
+
+          .text                   // executable code follows
+          .global _start                  
+_start:                             
+					MOV     R3, #TEST_NUM   // load the data word ...
+   0:	e3a0304c 	mov	r3, #76	; 0x4c
+					MOV     R5, #0          // holds greatest count of strings
+   4:	e3a05000 	mov	r5, #0
+
+00000008 <MAIN>:
+
+MAIN:               LDR     R1,[R3],#4 //get next word     
+   8:	e4931004 	ldr	r1, [r3], #4
+					CMP     R1,#0
+   c:	e3510000 	cmp	r1, #0
+					BEQ     END
+  10:	0a00000b 	beq	44 <END>
+					BL      COUNT_ONES
+  14:	eb000002 	bl	24 <COUNT_ONES>
+					CMP     R5,R0
+  18:	e1550000 	cmp	r5, r0
+					MOVLT   R5,R0
+  1c:	b1a05000 	movlt	r5, r0
+					B  		MAIN
+  20:	eafffff8 	b	8 <MAIN>
+
+00000024 <COUNT_ONES>:
+		  
+COUNT_ONES:         MOV     R0, #0          // R0 will hold the result
+  24:	e3a00000 	mov	r0, #0
+
+00000028 <LOOP>:
+LOOP:               CMP     R1, #0          // loop until the data contains no more 1's
+  28:	e3510000 	cmp	r1, #0
+					BEQ     COUNT_ONES_END             
+  2c:	0a000003 	beq	40 <COUNT_ONES_END>
+					LSR     R2, R1, #1      // perform SHIFT, followed by AND
+  30:	e1a020a1 	lsr	r2, r1, #1
+					AND     R1, R1, R2      
+  34:	e0011002 	and	r1, r1, r2
+					ADD     R0, #1          // count the string length so far
+  38:	e2800001 	add	r0, r0, #1
+					B       LOOP       
+  3c:	eafffff9 	b	28 <LOOP>
+
+00000040 <COUNT_ONES_END>:
+					
+COUNT_ONES_END:     MOV     PC,LR
+  40:	e1a0f00e 	mov	pc, lr
+
+00000044 <END>:
+
+END:      B       END             
+  44:	eafffffe 	b	44 <END>
+
+00000048 <N>:
+  48:	0000000a 	.word	0x0000000a
+
+0000004c <TEST_NUM>:
+  4c:	00000001 	.word	0x00000001
+  50:	00000002 	.word	0x00000002
+  54:	00000007 	.word	0x00000007
+  58:	0000000f 	.word	0x0000000f
+  5c:	0000001f 	.word	0x0000001f
+  60:	0000002f 	.word	0x0000002f
+  64:	0000007f 	.word	0x0000007f
+  68:	100000ff 	.word	0x100000ff
+  6c:	100001ff 	.word	0x100001ff
+  70:	fffff2ff 	.word	0xfffff2ff
+  74:	00000000 	.word	0x00000000

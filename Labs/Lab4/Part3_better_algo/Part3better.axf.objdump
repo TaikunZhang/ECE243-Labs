@@ -1,0 +1,153 @@
+
+C:/intelFPGA_lite/18.0/Ece243/Lab4/Part3_better_algo/Part3better.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+/* Program that counts multiple words for consecutive 1's */
+
+          .text                   // executable code follows
+          .global _start                  
+_start:                             
+						MOV     R3, #TEST_NUM   // load the data word ...
+   0:	e3a030c4 	mov	r3, #196	; 0xc4
+						LDR     R8, =0xffffffff
+   4:	e3e08000 	mvn	r8, #0
+						LDR     R10, =0xaaaaaaaa
+   8:	e59fa0e4 	ldr	r10, [pc, #228]	; f4 <TEST_NUM+0x30>
+						MOV     R5, #0          // holds greatest count of ones in a row
+   c:	e3a05000 	mov	r5, #0
+						MOV     R6, #0          // holds greatest count of zeros in a row
+  10:	e3a06000 	mov	r6, #0
+						MOV     R7, #0
+  14:	e3a07000 	mov	r7, #0
+
+00000018 <NEXT>:
+					
+NEXT: 					LDR     R9,[R3],#4 //get next word
+  18:	e4939004 	ldr	r9, [r3], #4
+
+0000001c <MAIN>:
+
+MAIN:              		CMP     R9,#0
+  1c:	e3590000 	cmp	r9, #0
+						BEQ     END
+  20:	0a000025 	beq	bc <END>
+						MOV     R1,R9
+  24:	e1a01009 	mov	r1, r9
+						BL      COUNT_ZEROS
+  28:	eb00000a 	bl	58 <COUNT_ZEROS>
+
+0000002c <STORE_ZERO_COUNT>:
+STORE_ZERO_COUNT:   	CMP     R6,R0
+  2c:	e1560000 	cmp	r6, r0
+						MOVLT   R6,R0
+  30:	b1a06000 	movlt	r6, r0
+						MOV     R1,R9
+  34:	e1a01009 	mov	r1, r9
+						BL      COUNT_ONES
+  38:	eb00000a 	bl	68 <COUNT_ONES>
+						CMP     R5,R0
+  3c:	e1550000 	cmp	r5, r0
+						MOVLT   R5,R0
+  40:	b1a05000 	movlt	r5, r0
+						MOV     R1,R9
+  44:	e1a01009 	mov	r1, r9
+						BL      COUNT_SEQUENCE
+  48:	eb00000e 	bl	88 <COUNT_SEQUENCE>
+
+0000004c <STORE_SEQUENCE_COUNT>:
+STORE_SEQUENCE_COUNT:	CMP     R7,R11
+  4c:	e157000b 	cmp	r7, r11
+						MOVLT   R7,R11
+  50:	b1a0700b 	movlt	r7, r11
+						B  		NEXT
+  54:	eaffffef 	b	18 <NEXT>
+
+00000058 <COUNT_ZEROS>:
+		  
+COUNT_ZEROS:      		MOV     R0, #0
+  58:	e3a00000 	mov	r0, #0
+						EOR     R1, R8
+  5c:	e0211008 	eor	r1, r1, r8
+						BL      COUNT_ONES
+  60:	eb000000 	bl	68 <COUNT_ONES>
+						B       STORE_ZERO_COUNT
+  64:	eafffff0 	b	2c <STORE_ZERO_COUNT>
+
+00000068 <COUNT_ONES>:
+		  		  
+COUNT_ONES:         	MOV     R0, #0          // R0 will hold the result
+  68:	e3a00000 	mov	r0, #0
+
+0000006c <LOOP_ONES>:
+LOOP_ONES:          	CMP     R1, #0          // loop until the data contains no more 1's
+  6c:	e3510000 	cmp	r1, #0
+						BEQ     COUNT_ONES_END             
+  70:	0a000003 	beq	84 <COUNT_ONES_END>
+						LSR     R2, R1, #1      // perform SHIFT, followed by AND
+  74:	e1a020a1 	lsr	r2, r1, #1
+						AND     R1, R1, R2      
+  78:	e0011002 	and	r1, r1, r2
+						ADD     R0, #1          // count the string length so far
+  7c:	e2800001 	add	r0, r0, #1
+						B       LOOP_ONES 
+  80:	eafffff9 	b	6c <LOOP_ONES>
+
+00000084 <COUNT_ONES_END>:
+					
+COUNT_ONES_END:     	MOV     PC,LR		
+  84:	e1a0f00e 	mov	pc, lr
+
+00000088 <COUNT_SEQUENCE>:
+					
+COUNT_SEQUENCE:     	MOV     R0, #0
+  88:	e3a00000 	mov	r0, #0
+						MOV     R11, #0
+  8c:	e3a0b000 	mov	r11, #0
+						EOR     R1, R10
+  90:	e021100a 	eor	r1, r1, r10
+						EOR     R1, R8
+  94:	e0211008 	eor	r1, r1, r8
+						BL      COUNT_ONES
+  98:	ebfffff2 	bl	68 <COUNT_ONES>
+						CMP     R11,R0
+  9c:	e15b0000 	cmp	r11, r0
+						MOVLT   R11,R0
+  a0:	b1a0b000 	movlt	r11, r0
+						MOV     R1, R9
+  a4:	e1a01009 	mov	r1, r9
+						EOR     R1, R10
+  a8:	e021100a 	eor	r1, r1, r10
+						BL      COUNT_ONES
+  ac:	ebffffed 	bl	68 <COUNT_ONES>
+						CMP     R11,R0
+  b0:	e15b0000 	cmp	r11, r0
+						MOVLT   R11,R0
+  b4:	b1a0b000 	movlt	r11, r0
+						B       STORE_SEQUENCE_COUNT
+  b8:	eaffffe3 	b	4c <STORE_SEQUENCE_COUNT>
+
+000000bc <END>:
+									
+END:      				B       END             
+  bc:	eafffffe 	b	bc <END>
+
+000000c0 <N>:
+  c0:	0000000a 	.word	0x0000000a
+
+000000c4 <TEST_NUM>:
+  c4:	ff000b51 	.word	0xff000b51
+  c8:	00000002 	.word	0x00000002
+  cc:	00000007 	.word	0x00000007
+  d0:	0000000f 	.word	0x0000000f
+  d4:	0000001f 	.word	0x0000001f
+  d8:	0000002f 	.word	0x0000002f
+  dc:	0000007f 	.word	0x0000007f
+  e0:	100000ff 	.word	0x100000ff
+  e4:	100001ff 	.word	0x100001ff
+  e8:	fffff2ff 	.word	0xfffff2ff
+  ec:	ffffffff 	.word	0xffffffff
+  f0:	00000000 	.word	0x00000000
+  f4:	aaaaaaaa 	.word	0xaaaaaaaa
